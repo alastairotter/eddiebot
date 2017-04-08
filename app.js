@@ -86,8 +86,12 @@ function sendMessage(event) {
     console.log("response --- ");
     console.log(response.result);
 
-    if(response.result.action === "help") { console.log("This person needs help"); }
+    // if(response.result.action === "help") { console.log("This person needs help"); }
 
+// TESTING GIF
+if(response.result.action === "input.unknown") {
+  sendConfusedImage(sender);
+}
 
     // RESPOND TO USER
     let aiText = response.result.fulfillment.speech;
@@ -139,7 +143,6 @@ function sendTypingOn(recipientId) {
 }
 
 function sendImage(recipientId) {
-	console.log("Sending an image");
 
 	var messageDataLogo = {
 		recipient: {
@@ -157,6 +160,28 @@ function sendImage(recipientId) {
 
 	sendApi(messageData);
 }
+
+
+function sendConfusedImage(recipientId) {
+
+	var messageDataConfused = {
+		recipient: {
+			id: recipientId
+		},
+    "message":{
+    "attachment":{
+      "type":"image",
+      "payload":{
+        "url":"http://dev.mediahack.co.za/eddiebot/confused.gif"
+      }
+    }
+  }
+	};
+
+	sendApi(messageDataConfused);
+}
+
+
 
 
 function sendApi(messageData) {

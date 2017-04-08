@@ -1,0 +1,49 @@
+// GET STARTED BUTTON
+
+curl -X POST -H "Content-Type: application/json" -d '{
+  "setting_type":"call_to_actions",
+  "thread_state":"new_thread",
+  "call_to_actions":[
+    {
+      "payload":"@getStarted"
+    }
+  ]
+}' "https://graph.facebook.com/v2.6/me/thread_settings?access_token=EAAKAMOmfZCN4BAFcsWnd03LGPke4QWGI2XhytyG0tK4b0vYQMUhaCgC5Sda07sbZAbR1MJfp6VYFzkYKQULXyr6ZBxNvNE9qWtF8AZBAsMY83ZA5m6jhQdQxPqYn4YWbO2lwnVllZC89UHUOTpGiCbEpfA2ZCa07dMUU0QNPepPMgZDZD"
+
+// GREETING MESSAGE
+
+curl -X POST -H "Content-Type: application/json" -d '{
+  "setting_type":"greeting",
+  "greeting":{
+    "text":"Hello. I am EddieBot."
+  }
+}' "https://graph.facebook.com/v2.6/me/thread_settings?access_token=EAAKAMOmfZCN4BAFcsWnd03LGPke4QWGI2XhytyG0tK4b0vYQMUhaCgC5Sda07sbZAbR1MJfp6VYFzkYKQULXyr6ZBxNvNE9qWtF8AZBAsMY83ZA5m6jhQdQxPqYn4YWbO2lwnVllZC89UHUOTpGiCbEpfA2ZCa07dMUU0QNPepPMgZDZD"
+
+
+// SET UP PERSISTENT MENU
+
+curl -X POST -H "Content-Type: application/json" -d '{
+  "persistent_menu":[
+    {
+      "locale":"default",
+      "composer_input_disabled":true,
+      "call_to_actions":[
+        {
+          "title":"Facts",
+          "type":"postback",
+          "payload":"PAYBILL_PAYLOAD"
+        }
+        {
+          "type":"web_url",
+          "title":"More",
+          "url":"http://passmark.org.za/eddiebot",
+          "webview_height_ratio":"full"
+        }
+      ]
+    },
+    {
+
+      "composer_input_disabled":false
+    }
+  ]
+}' "https://graph.facebook.com/v2.6/me/messenger_profile?access_token=EAAKAMOmfZCN4BAFcsWnd03LGPke4QWGI2XhytyG0tK4b0vYQMUhaCgC5Sda07sbZAbR1MJfp6VYFzkYKQULXyr6ZBxNvNE9qWtF8AZBAsMY83ZA5m6jhQdQxPqYn4YWbO2lwnVllZC89UHUOTpGiCbEpfA2ZCa07dMUU0QNPepPMgZDZD"

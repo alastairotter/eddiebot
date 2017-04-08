@@ -35,9 +35,48 @@ app.get('/webhook', (req, res) => {
   }
 });
 
+
+
+
 // HANDLING MESSAGES
 app.post('/webhook/', (req, res) => {
   console.log(req.body);
+
+
+// CHECK FOR GET STARTED payload
+var data = req.body;
+
+// Make sure this is a page subscription
+if (data.object === 'page') {
+
+    // Iterate over each entry - there may be multiple if batched
+    data.entry.forEach(function(entry) {
+    var pageID = entry.id;
+    var timeOfEvent = entry.time;
+
+    // Iterate over each messaging event
+    entry.messaging.forEach(function(event) {
+        if (event.message) {
+        //receivedMessage(event);
+        } else {
+            // If the event is a postback and has a payload equals USER_DEFINED_PAYLOAD
+        if(event.postback && event.postback.payload === '@getStarted' )
+        {
+                //present user with some greeting or call to action
+                var msg = "Hi ,I'm a Bot ,and I was created to help you easily .... ";
+                console.log(msg);
+                //sendMessage(event.sender.id,msg);
+        }
+
+        }
+    });
+    });
+
+    res.sendStatus(200);
+}
+// END CHECK FOR GET STARTED PAYLOAD
+
+
   if (req.body.object === 'page') {
     req.body.entry.forEach((entry) => {
       entry.messaging.forEach((event) => {
@@ -49,6 +88,8 @@ app.post('/webhook/', (req, res) => {
     res.status(200).end();
   }
 });
+
+
 
 // SEND MESSAGE
 

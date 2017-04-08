@@ -15,7 +15,7 @@ curl -X POST -H "Content-Type: application/json" -d '{
 curl -X POST -H "Content-Type: application/json" -d '{
   "setting_type":"greeting",
   "greeting":{
-    "text":"Hello. I am EddieBot."
+    "text":"Hello, I am EddieBot and I can help you with information about schools in South Africa. To get started click the Get Started button below."
   }
 }' "https://graph.facebook.com/v2.6/me/thread_settings?access_token=EAAKAMOmfZCN4BAFcsWnd03LGPke4QWGI2XhytyG0tK4b0vYQMUhaCgC5Sda07sbZAbR1MJfp6VYFzkYKQULXyr6ZBxNvNE9qWtF8AZBAsMY83ZA5m6jhQdQxPqYn4YWbO2lwnVllZC89UHUOTpGiCbEpfA2ZCa07dMUU0QNPepPMgZDZD"
 

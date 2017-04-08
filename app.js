@@ -43,38 +43,6 @@ app.post('/webhook/', (req, res) => {
   console.log(req.body);
 
 
-// CHECK FOR GET STARTED payload
-var data = req.body;
-
-// Make sure this is a page subscription
-if (data.object === 'page') {
-
-    // Iterate over each entry - there may be multiple if batched
-    data.entry.forEach(function(entry) {
-    var pageID = entry.id;
-    var timeOfEvent = entry.time;
-
-    // Iterate over each messaging event
-    entry.messaging.forEach(function(event) {
-        if (event.message) {
-        //receivedMessage(event);
-        } else {
-            // If the event is a postback and has a payload equals USER_DEFINED_PAYLOAD
-        if(event.postback && event.postback.payload === '@getStarted' )
-        {
-                //present user with some greeting or call to action
-                var msg = "Hi ,I'm a Bot ,and I was created to help you easily .... ";
-                console.log(msg);
-                //sendMessage(event.sender.id,msg);
-        }
-
-        }
-    });
-    });
-
-    res.sendStatus(200);
-}
-// END CHECK FOR GET STARTED PAYLOAD
 
 
   if (req.body.object === 'page') {
@@ -83,6 +51,18 @@ if (data.object === 'page') {
         if (event.message && event.message.text) {
           sendMessage(event);
         }
+        //CHECK FOR GET STARTED
+        else {
+          if(event.postback && event.postback.payload === '@getStarted' )
+          {
+                  //present user with some greeting or call to action
+                  let sender = event.sender.id;
+                  var msg = "Hi ,I'm a Bot ,and I was created to help you easily .... ";
+                  sendGetStartedMessage(msg,sender);
+                  //sendMessage(event.sender.id,msg);
+          }
+        }
+
       });
     });
     res.status(200).end();
@@ -129,107 +109,8 @@ function sendMessage(event) {
 
     }, 1000);
 
-    if(response.result.action === "help") {
-      setTimeout( function () {
-          sendTypingOn(sender);
-      }, 500)
-
-      // MESSAGE 2
-      var messageData2 = {
-        recipient: {
-          id: sender
-        },
-        message: {
-          text: "For example, I could send you some facts about asbestos in schools."
-        }
-      };
-
-      var messageData3 = {
-        recipient: {
-          id: sender
-        },
-        message: {
-          text: "Or I could help you look up your school and see if it is listed on the asbestos lists."
-        }
-      };
-
-      var messageData4 = {
-        recipient: {
-          id: sender
-        },
-        message: {
-          text: "Or I could help you sign up for for alerts when Passmark releases new data."
-        }
-      };
 
 
-      var messageData5 = {
-    		recipient: {
-    			id: sender
-    		},
-        message: {
-          attachment:{
-            type:"image",
-            payload:{
-            url:"http://dev.mediahack.co.za/eddiebot/logo.png"
-          }
-        }
-      }
-    	};
-
-      var messageData6 = {
-        recipient: {
-          id: sender
-        },
-        message: {
-          text: "Try it now: type 'fact' for a fact about asbestos schools"
-        }
-      };
-
-
-
-
-
-
-
-
-      setTimeout( function () {
-          sendApi(messageData2);
-          setTimeout( function () {
-              sendTypingOn(sender);
-          }, 300)
-
-      }, 6000)
-
-      setTimeout( function () {
-          sendApi(messageData3);
-          setTimeout( function () {
-              sendTypingOn(sender);
-          }, 300)
-      }, 9000)
-
-      setTimeout( function () {
-          sendApi(messageData4);
-          setTimeout( function () {
-              sendTypingOn(sender);
-          }, 300)
-
-      }, 12000)
-
-      // setTimeout( function () {
-      //     sendApi(messageData5);
-      //
-      // }, 15000)
-
-
-      setTimeout( function () {
-          sendApi(messageData6);
-
-      }, 18000)
-
-
-
-    }
 
 
 
@@ -303,4 +184,48 @@ function sendApi(messageData) {
 			console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
 		}
 	});
+}
+
+// SET GET STARTED MESSAGES
+
+function sendGetStartedMessage(msg,recipientId) {
+  setTimeout( function () {
+      sendTypingOn(recipientId);
+  }, 500)
+
+  var greetings = [
+    "Hi, I'm EddieBot. I'm here to help you with information about education in South Africa. Here are a few things I can do for you ...",
+    "I can send you you some facts about asbestos in schools.",
+    "Or I could help you look up your school to see if it is on the list of asbestos schools.",
+    "I can also help you sign up for updates as Passmark makes schools information available."
+  ];
+
+  greetings.forEach(function (msg, i) {
+
+    setTimeout( function () {
+        sendTypingOn(recipientId);
+    }, 300)
+
+    var messageData = {
+      recipient: {
+        id: recipientId
+      },
+      message: {
+        text: msg
+      }
+    };
+
+    setTimeout( function () {
+
+        sendApi(messageData);
+
+    }, i * 3000);
+
+  });
+
+
+
+
+
+
 }

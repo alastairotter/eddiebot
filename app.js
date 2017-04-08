@@ -61,48 +61,136 @@ function sendMessage(event) {
   });
 
   api.on('response', (response) => {
-    // Got a response from api.ai. Let's POST to Facebook Messenger
+
     console.log("response --- ");
     console.log(response.result);
+
+    if(response.result.action === "help") { console.log("This person needs help"); }
 
 
     // RESPOND TO USER
     let aiText = response.result.fulfillment.speech;
-
-    // RESPOND TO
-
-    request({
-      url: 'https://graph.facebook.com/v2.6/me/messages',
-      qs: {access_token: config.FB_PAGE_TOKEN},
-      method: 'POST',
-      json: {
-        recipient: {id: sender},
-
-        message: {
-          text: aiText,
-          "quick_replies":[
-      {
-        "content_type":"text",
-        "title":"Private Schools",
-        "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
-      },
-      {
-        "content_type":"text",
-        "title":"Public Scools",
-        "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+    var messageData = {
+  		recipient: {
+  			id: sender
+  		},
+      message: {
+        text: aiText
       }
-    ]
+  	};
+
+    // SEND TYPING
+    sendTypingOn(sender);
+
+    setTimeout( function () {
+      sendApi(messageData);
 
 
+    }, 1000);
+
+    if(response.result.action === "help") {
+      setTimeout( function () {
+          sendTypingOn(sender);
+      }, 500)
+
+      // MESSAGE 2
+      var messageData2 = {
+        recipient: {
+          id: sender
+        },
+        message: {
+          text: "For example, I could send you some facts about asbestos in schools."
+        }
+      };
+
+      var messageData3 = {
+        recipient: {
+          id: sender
+        },
+        message: {
+          text: "Or I could help you look up your school and see if it is listed on the asbestos lists."
+        }
+      };
+
+      var messageData4 = {
+        recipient: {
+          id: sender
+        },
+        message: {
+          text: "Or I could help you sign up for for alerts when Passmark releases new data."
+        }
+      };
+
+
+      var messageData5 = {
+    		recipient: {
+    			id: sender
+    		},
+        message: {
+          attachment:{
+            type:"image",
+            payload:{
+            url:"http://dev.mediahack.co.za/eddiebot/logo.png"
+          }
         }
       }
-    }, (error, response) => {
-      if (error) {
-          console.log('Error sending message: ', error);
-      } else if (response.body.error) {
-          console.log('Error: ', response.body.error);
-      }
-    });
+    	};
+
+      var messageData6 = {
+        recipient: {
+          id: sender
+        },
+        message: {
+          text: "Try it now: type 'fact' for a fact about asbestos schools"
+        }
+      };
+
+
+
+
+
+
+
+
+      setTimeout( function () {
+          sendApi(messageData2);
+          setTimeout( function () {
+              sendTypingOn(sender);
+          }, 300)
+
+      }, 6000)
+
+      setTimeout( function () {
+          sendApi(messageData3);
+          setTimeout( function () {
+              sendTypingOn(sender);
+          }, 300)
+      }, 9000)
+
+      setTimeout( function () {
+          sendApi(messageData4);
+          setTimeout( function () {
+              sendTypingOn(sender);
+          }, 300)
+
+      }, 12000)
+
+      // setTimeout( function () {
+      //     sendApi(messageData5);
+      //
+      // }, 15000)
+
+
+      setTimeout( function () {
+          sendApi(messageData6);
+
+      }, 18000)
+
+
+
+    }
+
+
 
   });
 
@@ -125,26 +213,53 @@ function sendTypingOn(recipientId) {
 		sender_action: "typing_on"
 	};
 
-	callSendAPI(messageData);
+	sendApi(messageData);
 }
 
-// function sendMessage(event) {
-//   let sender = event.sender.id;
-//   let text = event.message.text;
-//
-//   request({
-//     url: 'https://graph.facebook.com/v2.6/me/messages',
-//     qs: {access_token: config.FB_PAGE_TOKEN},
-//     method: 'POST',
-//     json: {
-//       recipient: {id: sender},
-//       message: {text: text}
-//     }
-//   }, function (error, response) {
-//     if (error) {
-//         console.log('Error sending message: ', error);
-//     } else if (response.body.error) {
-//         console.log('Error: ', response.body.error);
-//     }
-//   });
-// }
+function sendImage(recipientId) {
+	console.log("Sending an image");
+
+	var messageDataLogo = {
+		recipient: {
+			id: recipientId
+		},
+    "message":{
+    "attachment":{
+      "type":"image",
+      "payload":{
+        "url":"http://goinkscape.com/wp-content/uploads/2015/07/twitter-logo-final.png"
+      }
+    }
+  }
+	};
+
+	sendApi(messageData);
+}
+
+
+function sendApi(messageData) {
+	request({
+		uri: 'https://graph.facebook.com/v2.6/me/messages',
+		qs: {
+			access_token: config.FB_PAGE_TOKEN
+		},
+		method: 'POST',
+		json: messageData
+
+	}, function (error, response, body) {
+		if (!error && response.statusCode == 200) {
+			var recipientId = body.recipient_id;
+			var messageId = body.message_id;
+
+			if (messageId) {
+				console.log("Successfully sent message with id %s to recipient %s",
+					messageId, recipientId);
+			} else {
+				console.log("Successfully called Send API for recipient %s",
+					recipientId);
+			}
+		} else {
+			console.error("Failed calling Send API", response.statusCode, response.statusMessage, body.error);
+		}
+	});
+}

@@ -45,21 +45,23 @@ app.post('/webhook/', (req, res) => {
 
 
 
+
   if (req.body.object === 'page') {
     req.body.entry.forEach((entry) => {
       entry.messaging.forEach((event) => {
         if (event.message && event.message.text) {
+
+          console.log("Event: " + event.message.text);
+
           sendMessage(event);
         }
         //CHECK FOR GET STARTED
         else {
           if(event.postback && event.postback.payload === '@getStarted' )
           {
-                  //present user with some greeting or call to action
-                  let sender = event.sender.id;
-                  var msg = "Hi ,I'm a Bot ,and I was created to help you easily .... ";
-                  sendGetStartedMessage(msg,sender);
-                  //sendMessage(event.sender.id,msg);
+
+                  sendGetStartedMessage(event);
+
           }
         }
 
@@ -93,6 +95,12 @@ if(response.result.action === "input.unknown") {
   sendConfusedImage(sender);
 }
 
+// SEND GREETING MESSAGE
+if(response.result.action === "get_started") {
+  sendGetStartedMessage(event);
+}
+
+
     // RESPOND TO USER
     let aiText = response.result.fulfillment.speech;
     var messageData = {
@@ -111,7 +119,7 @@ if(response.result.action === "input.unknown") {
       sendApi(messageData);
 
 
-    }, 1000);
+    }, 3000);
 
 
 
@@ -213,16 +221,19 @@ function sendApi(messageData) {
 
 // SET GET STARTED MESSAGES
 
-function sendGetStartedMessage(msg,recipientId) {
+function sendGetStartedMessage(event) {
+  let recipientId = event.sender.id;
+
   setTimeout( function () {
       sendTypingOn(recipientId);
   }, 500)
 
   var greetings = [
-    "Hi, I'm EddieBot. I'm here to help you with information about education in South Africa. Here are a few things I can do for you ...",
-    "I can send you you some facts about asbestos in schools.",
-    "Or I could help you look up your school to see if it is on the list of asbestos schools.",
-    "I can also help you sign up for updates as Passmark makes schools information available."
+    "Hi there, I'm Eddie. Before we start here are a few tips. (1) If you get stuck type 'help'. (2) If you want updates as I add new information type 'subscribe'. (3) If you want to talk to a human, type 'take me to your leader'",
+    // "Want to know what an acceptable school looks like? Check out 'School Standards'",
+    // "Is your school listed as being made of asbestos or having asbestos classrooms? Take a look at 'Look Up'",
+    // "I can also help you sign up for occasional alerts when Passmark releases new school data",
+    // "Choose an option below"
   ];
 
   greetings.forEach(function (msg, i) {
@@ -247,6 +258,45 @@ function sendGetStartedMessage(msg,recipientId) {
     }, i * 3000);
 
   });
+
+
+setTimeout( function () {
+
+
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    "message":{
+    "attachment":{
+      "type":"template",
+      "payload":{
+        "template_type":"button",
+        "text":"What do you want to do next?",
+        "buttons":[
+          {
+            "type":"web_url",
+            "url":"https://petersapparel.parseapp.com",
+            "title":"Show Website"
+          },
+          {
+            "type":"postback",
+            "title":"Start Chatting",
+            "payload":"USER_DEFINED_PAYLOAD"
+          }
+        ]
+      }
+    }
+  }
+  };
+
+
+  sendApi(messageData);
+
+}, 5000);
+
+
+
 
 
 

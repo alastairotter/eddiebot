@@ -137,7 +137,6 @@ function sendMessage(event) {
 
 
 
-    // if(response.result.action === "help") { console.log("This person needs help"); }
 
 // TESTING GIF
 if(response.result.action === "input.unknown") {
@@ -150,18 +149,6 @@ if(response.result.action === "get_started") {
   sendGetStartedMessage(event);
 }
 
-// if(response.result.action === "move_on") {
-//   var handled = true;
-//   console.log("Moving on");
-//   curQ++;
-//   sendQuestion(event);
-// }
-//
-// if(response.result.action === "tell_more") {
-//   var handled = true;
-//   console.log(response);
-//   // console.log("Tell me more");
-// }
 
 
     // RESPOND TO USER USING API.AI RESPONSE IF NOT ALREADY HANDLED
@@ -504,29 +491,3 @@ function tellMore(question, event) {
 
 
 }
-
-// function sendMore(sender) {
-//       var messageData = {
-//         "recipient":{
-//         "id": sender
-//       },
-//       "message":{
-//         "text":"Pick a color:",
-//         "quick_replies":[
-//           {
-//             "content_type":"text",
-//             "title":"More",
-//             "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
-//           },
-//           {
-//             "content_type":"text",
-//             "title":"Next",
-//             "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
-//           }
-//         ]
-//       }
-//     }
-//
-//     sendApi(messageData);
-//
-// }

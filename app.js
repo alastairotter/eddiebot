@@ -55,13 +55,15 @@ app.post('/webhook/', (req, res) => {
 
           sendMessage(event);
         }
-        //CHECK FOR GET STARTED
+        //CHECK FOR PAYLOAD
         else {
           if(event.postback && event.postback.payload === '@getStarted' )
           {
-
                   sendGetStartedMessage(event);
-
+          }
+          else if(event.postback && event.postback.payload === '@go' )
+          {
+                  console.log("Got GO message");
           }
         }
 
@@ -85,8 +87,7 @@ function sendMessage(event) {
 
   api.on('response', (response) => {
 
-    console.log("response --- ");
-    console.log(response.result);
+
 
     // if(response.result.action === "help") { console.log("This person needs help"); }
 
@@ -229,7 +230,7 @@ function sendGetStartedMessage(event) {
   }, 500)
 
   var greetings = [
-    "Hi there, I'm Eddie. Before we start here are a few tips. (1) If you get stuck type 'help'. (2) If you want updates as I add new information type 'subscribe'. (3) If you want to talk to a human, type 'take me to your leader'",
+    "Hi there, I'm Eddie. Before we start here are a few tips. (1) If you get stuck type 'help'. (2) If you want updates as I add new information type 'subscribe'. (3) If you want to talk to a human(!), type 'take me to your leader' or, if you're lazy, 'leader'",
     // "Want to know what an acceptable school looks like? Check out 'School Standards'",
     // "Is your school listed as being made of asbestos or having asbestos classrooms? Take a look at 'Look Up'",
     // "I can also help you sign up for occasional alerts when Passmark releases new school data",
@@ -272,17 +273,17 @@ setTimeout( function () {
       "type":"template",
       "payload":{
         "template_type":"button",
-        "text":"What do you want to do next?",
+        "text":"Let's get started. Click 'Go' when you're ready. ",
         "buttons":[
-          {
-            "type":"web_url",
-            "url":"https://petersapparel.parseapp.com",
-            "title":"Show Website"
-          },
+          // {
+          //   "type":"web_url",
+          //   "url":"https://petersapparel.parseapp.com",
+          //   "title":"Show Website"
+          // },
           {
             "type":"postback",
-            "title":"Start Chatting",
-            "payload":"USER_DEFINED_PAYLOAD"
+            "title":"Go",
+            "payload":"@go"
           }
         ]
       }

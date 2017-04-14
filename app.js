@@ -1,6 +1,7 @@
 'use strict';
 
 const config = require('./config');
+require('./questions');
 const express = require('express');
 // const crypto = require('crypto');
 const bodyParser = require('body-parser');
@@ -9,6 +10,10 @@ const app = express();
 const apiai = require('apiai');
 const apiApp = apiai(config.API_AI_CLIENT_ACCESS_TOKEN);
 // const uuid = require('uuid');
+
+
+console.log(q[curQ].q);
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -51,12 +56,14 @@ app.post('/webhook/', (req, res) => {
       entry.messaging.forEach((event) => {
         if (event.message && event.message.text) {
 
-          console.log("Event: " + event.message.text);
-
           sendMessage(event);
+
         }
         //CHECK FOR PAYLOAD
         else {
+
+          console.log("payload: " + event.postback.payload);
+
           if(event.postback && event.postback.payload === '@getStarted' )
           {
                   sendGetStartedMessage(event);
@@ -64,7 +71,48 @@ app.post('/webhook/', (req, res) => {
           else if(event.postback && event.postback.payload === '@go' )
           {
                   console.log("Got GO message");
+                  sendQuestion(event, 0);
+
           }
+          // CAPTURE ANSWERS
+          else if(event.postback && event.postback.payload.indexOf("Answer_") >= 0)
+
+            {
+              // SPLIT
+              var answer = event.postback.payload;
+              var answers = answer.split("_");
+
+              var answer = answers[3];
+              var question = answers[1];
+
+              checkAnswer(question, answer, event);
+
+            }
+
+            // CAPTURE NAVIGATION
+            else if(event.postback && event.postback.payload.indexOf("Navigation_") >= 0)
+              {
+                var navigation = event.postback.payload;
+                navigation = navigation.split("_");
+
+                if(navigation[1] === "tellmore") {
+                  var question = +navigation[3];
+                  tellMore(question, event);
+
+                }
+                else if(navigation[1] === "moveon") {
+                  var question = +navigation[3];
+                  question++;
+
+                  sendQuestion(event, question);
+                }
+
+                console.log(navigation);
+
+              }
+
+
+
         }
 
       });
@@ -82,7 +130,7 @@ function sendMessage(event) {
   let text = event.message.text;
 
   let api = apiApp.textRequest(text, {
-    sessionId: 'tabby_cat' // use any arbitrary id
+    sessionId: 'tabby_cat'
   });
 
   api.on('response', (response) => {
@@ -98,11 +146,26 @@ if(response.result.action === "input.unknown") {
 
 // SEND GREETING MESSAGE
 if(response.result.action === "get_started") {
+  var handled = true;
   sendGetStartedMessage(event);
 }
 
+// if(response.result.action === "move_on") {
+//   var handled = true;
+//   console.log("Moving on");
+//   curQ++;
+//   sendQuestion(event);
+// }
+//
+// if(response.result.action === "tell_more") {
+//   var handled = true;
+//   console.log(response);
+//   // console.log("Tell me more");
+// }
 
-    // RESPOND TO USER
+
+    // RESPOND TO USER USING API.AI RESPONSE IF NOT ALREADY HANDLED
+    if(!handled) {
     let aiText = response.result.fulfillment.speech;
     var messageData = {
   		recipient: {
@@ -122,9 +185,11 @@ if(response.result.action === "get_started") {
 
     }, 3000);
 
+  }
 
 
 
+  var handled = false;
 
 
   });
@@ -151,9 +216,9 @@ function sendTypingOn(recipientId) {
 	sendApi(messageData);
 }
 
-function sendImage(recipientId) {
+function sendImage(recipientId, url) {
 
-	var messageDataLogo = {
+	var messageDataImage = {
 		recipient: {
 			id: recipientId
 		},
@@ -161,13 +226,13 @@ function sendImage(recipientId) {
     "attachment":{
       "type":"image",
       "payload":{
-        "url":"http://goinkscape.com/wp-content/uploads/2015/07/twitter-logo-final.png"
+        "url": url
       }
     }
   }
 	};
 
-	sendApi(messageData);
+	sendApi(messageDataImage);
 }
 
 
@@ -297,11 +362,171 @@ setTimeout( function () {
 }, 5000);
 
 
+}
+
+// QUESTIONS
+function sendQuestion(event, no) {
+  console.log("Question number: " + no);
+  console.log(q[1]);
+
+  let recipientId = event.sender.id;
+
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    "message":{
+    "attachment":{
+      "type":"template",
+      "payload":{
+        "template_type":"button",
+        "text": q[no].q,
+        "buttons":[
+          // {
+          //   "type":"web_url",
+          //   "url":"https://petersapparel.parseapp.com",
+          //   "title":"Show Website"
+          // },
+          {
+            "type": "postback",
+            "title": q[no].a,
+            "payload": "Question_" + no + "_Answer_a"
+          },
+          {
+            "type":"postback",
+            "title":q[no].b,
+            "payload": "Question_" + no + "_Answer_b"
+          },
+          {
+            "type": "postback",
+            "title": q[no].c,
+            "payload": "Question_" + no + "_Answer_c"
+          }
+        ]
+      }
+    }
+  }
+  };
+
+  sendApi(messageData);
 
 
+}
 
+
+function checkAnswer(question, answer, event) {
+  let sender = event.sender.id;
+
+  if(answer === q[question].answer) {
+    var text = "👏 🎉 Awesome! That's right. " + q[question].more;
+  }
+  else {
+    var text = "😞 Sorry, that's not right." + q[question].more;
+  }
+
+
+  var messageData = {
+  		recipient: {
+  			id: sender
+  		},
+      message: {
+        "attachment":{
+          "type":"template",
+          "payload":{
+            "template_type":"button",
+            "text": text,
+            "buttons":[
+              {
+                "type": "postback",
+                "title": "Tell me more",
+                "payload": "Navigation_tellmore_Question_" + question
+              },
+              {
+                "type":"postback",
+                "title": "Let's move on",
+                "payload": "Navigation_moveon_Question_" + question
+              }
+            ]
+          }
+        }
+      }
+  	};
+
+    sendTypingOn(sender);
+
+    setTimeout( function () {
+      sendApi(messageData);
+
+
+    }, 3000);
 
 
 
 
 }
+
+
+
+function tellMore(question, event) {
+  let sender = event.sender.id;
+  var text = q[question].extra;
+  var messageData = {
+  		recipient: {
+  			id: sender
+  		},
+      message: {
+        "attachment":{
+          "type":"template",
+          "payload":{
+            "template_type":"button",
+            "text": text,
+            "buttons":[
+              {
+                "type":"postback",
+                "title": "Okay, let's move on",
+                "payload": "Navigation_moveon_Question_" + question
+              }
+            ]
+          }
+        }
+      }
+  	};
+
+    sendTypingOn(sender);
+
+    setTimeout( function () {
+      sendApi(messageData);
+
+
+    }, 3000);
+
+
+
+
+}
+
+// function sendMore(sender) {
+//       var messageData = {
+//         "recipient":{
+//         "id": sender
+//       },
+//       "message":{
+//         "text":"Pick a color:",
+//         "quick_replies":[
+//           {
+//             "content_type":"text",
+//             "title":"More",
+//             "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_RED"
+//           },
+//           {
+//             "content_type":"text",
+//             "title":"Next",
+//             "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_PICKING_GREEN"
+//           }
+//         ]
+//       }
+//     }
+//
+//     sendApi(messageData);
+//
+// }
